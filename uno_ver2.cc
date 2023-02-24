@@ -134,69 +134,57 @@ void Uno::game_loop() {
             cards_showing.push_back(std::move(*card));
             players[current_player].cards.erase(card);
 
-            msg(players_max_num, "玩家"+std::to_string(current_player)+"出牌："+cards_showing.back().to_string()+"剩余"+std::to_string(players[current_player].cards.size()));
+            msg("log", "玩家"+std::to_string(current_player)+"出牌："+cards_showing.back().to_string()+"剩余"+std::to_string(players[current_player].cards.size()));
 
-            // uno判定
-            if (players[current_player].cards.size() == 1) {
-                msg(players_max_num, "玩家"+std::to_string(current_player)+"UNO");
-            }
-            
-            // 胜利判定
             if (players[current_player].cards.size() == 0) {
                 throw one_player_win{ current_player };
+                return;
+            } else if (players[current_player].cards.size() == 1) {
+                msg("log", "玩家"+std::to_string(current_player)+"UNO");
             }
 
-            // 功能牌判定 黑牌
+            // 功能牌判定
             if (cards_showing.back().color == 0) {
-                
-                // 功能牌判定 黑牌+4
                 if (cards_showing.back().type == 12) { // +4
                     auto next = get_next_player();
                     players[next].cards.push_back(get_card());
                     players[next].cards.push_back(get_card());
                     players[next].cards.push_back(get_card());
                     players[next].cards.push_back(get_card());
-                    msg(players_max_num, "玩家"+std::to_string(next)+"罚抽4张");
-                }
-                
-                // 功能牌判定 黑牌变色
-                else if (cards_showing.back().type == 13) {
+                    msg("log", "玩家"+std::to_string(next)+"罚抽4张");
+                } else if (cards_showing.back().type == 13) { // 变色
 
                     // 将交互抽象出去
                     reference_card.color = choose_color(current_player);
                 }
 
-            // 功能牌判定 红黄蓝绿的功能牌
             } else if (cards_showing.back().color >= 1 && cards_showing.back().color <= 4) {
+
                 switch (cards_showing.back().type) {
-                    case 10: { // flip
-                        direct = !direct;
-                        msg(players_max_num, (direct ? "逆序" : "顺序"));
-                        break;
-                    }
-                    case 11: { // pass
-                        current_player = get_next_player();
-                        msg(players_max_num,  "玩家"+std::to_string(current_player)+"被pass");
-                        break;
-                    }
-                    case 12: { // +2
-                        auto next = get_next_player();
-                        players[next].cards.push_back(get_card());
-                        players[next].cards.push_back(get_card());
-                        msg(players_max_num, "玩家"+std::to_string(next)+"罚抽4张");
-                        break;
-                    }
+                case 10: // flip
+                    // 排序切换
+                    direct = !direct;
+                    msg("log", (direct ? "逆序" : "顺序"));
+                    msg("all", (direct ? "逆序" : "顺序"));
+                    break;
+                case 11: // pass
+                    current_player = get_next_player();
+                    msg("log", "玩家"+std::to_string(current_player)+"被pass");
+                    break;
+                case 12: // +2
+                    auto next = get_next_player();
+                    players[next].cards.push_back(get_card());
+                    players[next].cards.push_back(get_card());
+                    msg("log", "玩家"+std::to_string(next)+"罚抽4张");
+                    break;
                 }
             }
 
-            // 轮到下家
             current_player = get_next_player();
-        }  
+        }
     } catch(one_player_win &e) {
-        msg(players_max_num, "玩家"+std::to_string(current_player)+"胜利");
-    } catch(one_player_quit &e) {
-        msg(players_max_num, "玩家"+std::to_string(current_player)+"退出 游戏终止");
+        msg("log", "玩家"+std::to_string(current_player)+"胜利");
     } catch(cards_is_empty &e) {
-        msg(players_max_num, "卡牌用尽 游戏终止");
+        msg("log", "卡牌用尽！");
     }
 }

@@ -9,20 +9,17 @@ public:
 
     Uno(size_t players_max_num = 8);
 
-    // 游戏循环 用于开始游戏
+    // 游戏循环
     void game_loop();
 
-    // 接口 玩家出牌 需要重载
+    // 玩家出牌接口 需要重载
     virtual size_t choose_card(size_t player, const std::vector<Card>& player_cards) = 0;
     
-    // 接口 玩家选色 需要重载
+    // 玩家选色接口 需要重载
     virtual size_t choose_color(size_t player) = 0;
 
-    // 接口 消息分发 需要重载
-    virtual void msg(size_t player_id, const std::string& text) = 0;
-    // 此接口当前用于概况所有事件
-    // 后续会被扩展
-    // 各个事件将会有单独的接口
+    // 消息接口 需要重载
+    virtual void msg(const std::string& to, const std::string& text) = 0;
 
 protected:
 
@@ -43,8 +40,8 @@ protected:
     std::vector<Card> cards_showing; // 已打出的牌
 
     struct Player {
+        std::string name;        // 玩家名
         std::vector<Card> cards; // 玩家手牌
-        // std::string name;        // 玩家名
     };
 
     std::vector<Player> players; // 玩家
